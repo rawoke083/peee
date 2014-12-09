@@ -8,19 +8,20 @@
 		<script>
 
 var GGameId=0;
-var PlayerId=0;
-  var ws = new WebSocket("ws://10.0.0.35:8080/rest/cmd");
-        ws.onmessage = function(e) {
-          console.log("RX:" + event.data);
-        };
+var GPlayerIndex=0;
+var GRkey = Math.floor((Math.random() * 10000000) + 1) +  Math.floor((Math.random() * 10000000) + 1);
+
+
+  var ws = 0;
         
 function rc(cmd){
 	
-	alert(GGameId)
+	alert(GGameId);
 	
 	 var cmdObj = {
     GameId:parseInt(GGameId),
     Cmd:cmd,
+    Rkey:GRkey,
  
     timestamp: Date.now()
   };
@@ -29,22 +30,55 @@ function rc(cmd){
      
          var data = cmd
          ws.send(JSON.stringify(cmdObj));
-          
-      
       
 	
 }//end rc
 
-function join_game(){
+
+
+function remote_setup(){
 	
 
-    
-    var params={};
-    window.location.search.replace(/[?&]+([^=&]+)=([^&]*)/gi,function(str,key,value)
+ var params={};
+   window.location.search.replace(/[?&]+([^=&]+)=([^&]*)/gi,function(str,key,value)
     {params[key] = value;});
 
-	GGameId = params['id'];
+
+	GGameId = params['gameid'];
+
+	rkey = params['rkey'];
+	if(rkey  == undefined ) {
+		window.location = window.location+"&rkey="+GRkey;
+		
+	}
+	else{
+		GRkey = rkey;
+		
+	}
 	
+}
+
+
+function join_game(){
+
+    			$.ajax({
+  type: "POST",
+  url: "http://peeepong.host/rest/gamejoin?gameid="+GGameId+"&rkey="+GRkey,
+  data: "koos=1",
+   dataType: 'json',
+  success:function(data){
+	  if(data.Players[0].RKey==GRkey){
+	  GPlayerIndex = 0;
+	  }else if(data.Players[1].RKey==GRkey){
+		GPlayerIndex = 1;
+	  }
+	  
+	  $('#pstatus').text("Connected - Game ("+GGameId+")");
+	  $('#pindex').text("Player ("+(GPlayerIndex+1)+")");
+	  
+  }//end succues
+ 
+});//end ajax;
 
 }
 
@@ -52,6 +86,20 @@ function join_game(){
 
 
 
+
+
+
+$(function() {
+    console.log( "ready!" );
+    remote_setup();
+    
+    
+    ws =  new WebSocket("ws://127.0.0.1:8080/rest/cmd");
+        ws.onmessage = function(e) {
+          console.log("RX:" + event.data);
+        }
+  
+});
 		</script>
 	</head>
 	<body>
@@ -59,9 +107,16 @@ function join_game(){
       
       
 	<h1>PeePong - Control</h1>
+	<a href="/index3.html">GAME LIST</a>
 	
-	<div id="GameList">
-		
+	<div id="pstatus" style="padding:20px;">
+		NOT CONNECTED
+	</div>
+	
+	
+	
+	<div id="pindex" style="padding:20px;">
+		Player X
 	</div>
 	
 	
@@ -80,6 +135,8 @@ function join_game(){
 	<p>
 	</p>
 	<input type="button" value="Join Game" onclick="join_game();">
+	
+	
 	
 	</body>
 </html>
