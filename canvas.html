@@ -1,0 +1,110 @@
+<html>
+<head>
+<script src="jquery.min.js"></script>
+<script>
+
+var imgP1; 
+var imgP2;
+
+
+var P1Data = {
+		x : 20,
+		y : 10,
+		
+	}
+
+var P2Data = {
+		x : 1,
+		y : 1,
+		
+	}
+	
+	
+function getWorldData(){
+		
+//get ajax code
+
+/*
+
+
+	Gamedata.state (1,2,3) ready,playing, done(win player 2) ???
+	gamedata.players[0].x
+	gamedata.players[0].y
+	
+	gamedata.players[1].x
+	gamedata.players[2].y
+	
+
+*/
+
+}
+
+function updateWorld(){
+ P1Data.x =  P1Data.x + 5;
+ 
+ 
+
+ 
+}
+
+function drawWorld(){
+
+ var canvas = document.getElementById('myCanvas');
+ var context = canvas.getContext('2d');
+ 	canvas.width =  canvas.width;
+ 	
+ 	
+  context.drawImage(imgP1,P1Data.x, P1Data.y);
+   context.drawImage(imgP2,P2Data.x, P2Data.y);
+}
+	
+function game_loop(){
+	updateWorld()
+	drawWorld()
+		
+
+}
+
+function initGame(){
+	
+	var canvas = document.getElementById('myCanvas');
+    var context = canvas.getContext('2d');
+	imgP1 =  new Image();
+	imgP2 = new Image();
+
+      imgP1.onload = function() {
+         context.drawImage(imgP1,P1Data.x, P1Data.y);
+      };
+      
+      imgP2.onload = function() {
+		
+        context.drawImage(imgP2,P2Data.x, P2Data.y);
+      };
+      
+      imgP1.src = 'http://peeepong.host/p1.jpg';
+      imgP2.src = 'http://peeepong.host/p1.jpg';
+}
+
+
+$( document ).ready(function() {
+    
+ initGame();
+ 
+   window.setInterval(function() {
+        game_loop();
+    }, 20);
+    
+    
+
+
+    
+});
+
+
+</script>
+</head>
+<body>
+<canvas id="myCanvas" width="1000" height="1000" style="border:1px solid #000000;">
+</canvas>
+</body>
+</html>

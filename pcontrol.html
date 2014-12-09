@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8" />
+		<title>Sample of websocket with golang</title>
+		
+		<script src="jquery.min.js"></script>
+		<script>
+
+var GGameId=0;
+var PlayerId=0;
+  var ws = new WebSocket("ws://10.0.0.35:8080/rest/cmd");
+        ws.onmessage = function(e) {
+          console.log("RX:" + event.data);
+        };
+        
+function rc(cmd){
+	
+	alert(GGameId)
+	
+	 var cmdObj = {
+    GameId:parseInt(GGameId),
+    Cmd:cmd,
+ 
+    timestamp: Date.now()
+  };
+  
+
+     
+         var data = cmd
+         ws.send(JSON.stringify(cmdObj));
+          
+      
+      
+	
+}//end rc
+
+function join_game(){
+	
+
+    
+    var params={};
+    window.location.search.replace(/[?&]+([^=&]+)=([^&]*)/gi,function(str,key,value)
+    {params[key] = value;});
+
+	GGameId = params['id'];
+	
+
+}
+
+
+
+
+
+		</script>
+	</head>
+	<body>
+
+      
+      
+	<h1>PeePong - Control</h1>
+	
+	<div id="GameList">
+		
+	</div>
+	
+	
+	<div id="rcontrols" style="width:100%;">
+		<table" border="1" style="padding:10px;margin:10px;">
+			<tr>
+				<td><input style="padding:10px;"  type="button" value="LEFT" onclick="rc(1);"></td>
+				
+				<td><input style="padding:10px;"  type="button" value="ACTION" onclick="rc(10);"></td>
+				
+				<td><input style="padding:10px;"  type="button" value="RIGHT" onclick="rc(2);"></td>
+				
+			</tr>
+		</table>
+	</div>
+	<p>
+	</p>
+	<input type="button" value="Join Game" onclick="join_game();">
+	
+	</body>
+</html>

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8" />
+		<title>Sample of websocket with golang</title>
+		<script src="jquery.min.js"></script>
+		<script>
+function list_games(){
+	
+		
+  $.ajax({ 
+	   crossDomain: true,
+	    
+	  url:"http://peeepong.host/rest/game",
+	  dataType: 'json',
+	  success:function(result){
+   
+  
+ 
+    $("#GameList").html("<a href='/pcontrol.html?id="+result.Id+"'>Game - "+result.Id+"</a>");
+    
+    
+  }});
+  
+  
+}
+
+
+
+
+
+		</script>
+	</head>
+	<body>
+
+      
+      
+	<h1>PeePong</h1>
+	
+	<div id="GameList">
+		
+	</div>
+	
+	<input type="button" value="List Games" onclick="list_games();">
+	
+	
+	</body>
+</html>
