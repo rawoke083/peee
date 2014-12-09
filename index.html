@@ -1,8 +1,80 @@
-<!doctype html>
-<head>
-<!-- Production minified ~20k gzipped -->
-<script src='http://cdn.html5quintus.com/v0.2.0/quintus-all.min.js'></script>
-</head>
+<!DOCTYPE html>
 <html>
- <head>Peee</head>
+	<head>
+		<meta charset="UTF-8" />
+		<title>Sample of websocket with golang</title>
+		<script src="jquery.min.js"></script>
+		<script>
+			
+			function new_game()
+			{
+			$.ajax({
+  type: "POST",
+  url: "http://peeepong.host/rest/game",
+  data: "koos=1",
+  success:function(data){
+	  list_games()
+  }//end succues
+ 
+});//end ajax;
+			
+			}
+			
+			
+			
+function list_games(){
+	
+		$("#glist").html("");
+		
+  $.ajax({ 
+	   crossDomain: true,
+	    
+	  url:"http://peeepong.host/rest/game",
+	  dataType: 'json',
+	  success:function(data){
+   
+    
+   $.each(data, function(index) {
+         
+           
+           var items = [];
+           if (data[index].Id > 0){
+				 
+				   items.push('<li> <a href="/canvas.html?gameid=' + data[index].Id+ '"> As TV (' + data[index].Id+ ')| </a> | <a href="/pcontrol.html?gameid=' + data[index].Id+ '"> As RemoteControl -  Players('+data[index].PCount+')</a></li>');
+
+		   }
+           $('#glist').append( items.join('') );
+           
+        });
+  
+ //alert(result);
+  //  $("#GameList").html("<a href='/pcontrol.html?id="+result.Id+"'>Game - "+result.Id+"</a>");
+    
+    
+  }});
+  
+  
+}
+
+
+
+
+
+		</script>
+	</head>
+	<body>
+
+      
+      
+	<h1>PeePong</h1>
+	
+	<div id="GameList">
+		<ul id="glist">
+		</ul>	
+	</div>
+	
+	<input type="button" value="List Games" onclick="list_games();">
+	<input type="button" value="New Game" onclick="new_game();">
+	
+	</body>
 </html>
