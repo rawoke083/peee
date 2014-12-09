@@ -2,12 +2,12 @@ package main
 
 import (
 	"code.google.com/p/go.net/websocket"
+	"github.com/zenazn/goji"
+
 	"flag"
 	"fmt"
-	"github.com/zenazn/goji"
 	"log"
 	"net/http"
-	/// gojiweb   "github.com/zenazn/goji/web"
 	"math/rand"
 	"time"
 
@@ -50,7 +50,7 @@ type PeeeGame struct {
 	State       int
 	PlayerCount int
 	Players     [2]PeePlayer
-	PCount		int
+	PCount      int
 }
 
 type PCmd struct {
@@ -59,7 +59,7 @@ type PCmd struct {
 	Timestamp int64
 }
 
-var pgames = make([]PeeeGame,3)
+var pgames = make([]PeeeGame, 3)
 
 func webHandlerCmd(ws *websocket.Conn) {
 
@@ -127,15 +127,14 @@ func RESTGameNew(w http.ResponseWriter, r *http.Request) {
 	for i, agame := range pgames {
 		if agame.State == GS_EMPTY {
 			setupGame(&pgames[i])
-			
-		log.Println("AFTER",pgames[i].Id,"xxxx",i)
+
+			log.Println("AFTER", pgames[i].Id, "xxxx", i)
 			str, _ := json.Marshal(pgames[i])
 			fmt.Fprintf(w, string(str))
-		 break;
+			break
 		} //end if
 	}
 }
-
 
 func RESTGameJoin(w http.ResponseWriter, r *http.Request) {
 	gameIdstr := r.URL.Query()["gameid"][0]
@@ -148,28 +147,27 @@ func RESTGameJoin(w http.ResponseWriter, r *http.Request) {
 		fmt.Println(err)
 	}
 
-	for i,_ := range pgames {
+	for i, _ := range pgames {
 		if gameId == pgames[i].Id && pgames[i].State == GS_READY {
-		
-			
+
 			if pgames[i].Players[0].RKey == "" {
 				pgames[i].Players[0].RKey = rkeyIdstr
 				pgames[i].PCount++
 			} else if pgames[i].Players[1].RKey == "" {
 				pgames[i].Players[1].RKey = rkeyIdstr
 				pgames[i].PCount++
-			}else if pgames[i].Players[1].RKey==rkeyIdstr {
+			} else if pgames[i].Players[1].RKey == rkeyIdstr {
 				//
-			}else if pgames[i].Players[0].RKey==rkeyIdstr {
-				
+			} else if pgames[i].Players[0].RKey == rkeyIdstr {
+
 			} else {
 				http.Error(w, "Too Many Players", 429)
 			}
 
 			str, _ := json.Marshal(pgames[i])
 			fmt.Fprintf(w, string(str))
-			fmt.Println("%#v",pgames[i])
-			return;
+			fmt.Println("%#v", pgames[i])
+			return
 		} //end if
 	}
 
