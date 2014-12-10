@@ -9,16 +9,21 @@
 
 var GGameId=0;
 var GPlayerIndex=0;
-var GRkey = Math.floor((Math.random() * 10000000) + 1) +  Math.floor((Math.random() * 10000000) + 1);
+var GRkey = Math.floor((Math.random() * 10000000) + 1) +  Math.floor((Math.random() * 10000000) + 1)
+var ws = 0;
+var GLAST_CMD_TIME=0;
 
-
-  var ws = 0;
-        
 function rc(cmd){
 	
-	alert(GGameId);
 	
-	 var cmdObj = {
+	if(GLAST_CMD_TIME == 0  || (Date.now()- GLAST_CMD_TIME) > 10)
+	{
+	
+	
+	
+
+	
+var cmdObj = {
     GameId:parseInt(GGameId),
     Cmd:cmd,
     Rkey:GRkey,
@@ -26,11 +31,11 @@ function rc(cmd){
     timestamp: Date.now()
   };
   
-
      
-         var data = cmd
-         ws.send(JSON.stringify(cmdObj));
-      
+   var data = cmd
+   ws.send(JSON.stringify(cmdObj));
+   GLAST_CMD_TIME =   Date.now();
+}//end timecheck 
 	
 }//end rc
 
@@ -53,6 +58,7 @@ function remote_setup(){
 	}
 	else{
 		GRkey = rkey;
+		join_game();
 		
 	}
 	
@@ -94,10 +100,48 @@ $(function() {
     remote_setup();
     
     
-    ws =  new WebSocket("ws://127.0.0.1:8080/rest/cmd");
+    ws =  new WebSocket("ws://peeepong.host:8080/rest/cmd");
         ws.onmessage = function(e) {
           console.log("RX:" + event.data);
         }
+  
+  
+  
+  if(window.DeviceOrientationEvent){
+		
+		
+		if(GGameId==0){
+			return;
+		}
+		
+		
+		
+		
+	window.addEventListener('deviceorientation',function(eventData){
+	
+	 $('#dostatus').text(eventData.beta);
+	 //up
+	 if(eventData.beta > 20 && eventData.beta <  85){
+		rc(1);
+		
+	 }//down
+	 else if(eventData.beta < -20 && eventData.beta > -85)
+	 {
+		 rc(2);
+	 }
+	 
+	 
+	 
+	 
+	 
+   });
+   
+   
+   
+   
+  }//end dev-event
+  
+  
   
 });
 		</script>
@@ -113,6 +157,10 @@ $(function() {
 		NOT CONNECTED
 	</div>
 	
+	<div id="dostatus" style="padding:20px;">
+		
+	</div>
+	
 	
 	
 	<div id="pindex" style="padding:20px;">
@@ -125,7 +173,8 @@ $(function() {
 			<tr>
 				<td><input style="padding:10px;"  type="button" value="LEFT" onclick="rc(1);"></td>
 				
-				<td><input style="padding:10px;"  type="button" value="ACTION" onclick="rc(10);"></td>
+				<td><input style="padding:10px;"  type="button" value="ACTION_A" onclick="rc(10);"></td>
+				<td><input style="padding:10px;"  type="button" value="ACTION_B" onclick="rc(12);"></td>
 				
 				<td><input style="padding:10px;"  type="button" value="RIGHT" onclick="rc(2);"></td>
 				

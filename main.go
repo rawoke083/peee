@@ -13,14 +13,29 @@ import (
 
 	"encoding/json"
 	"strconv"
+	"github.com/zenazn/goji/web"
 )
 
 const (
 	GS_EMPTY   = 0
 	GS_READY   = 2
+	
 	GS_PLAYING = 4
 	GS_DONE_P1 = 10
 	GS_DONE_P2 = 12
+)
+
+const (
+	PC_UP   = 1
+	
+	PC_DOWN   = 2
+	
+	PC_LEFT = 3
+	
+	PC_RIGHT = 4
+	
+	PC_ACTION_A = 10
+	PC_ACTION_B = 12
 )
 
 const (
@@ -57,9 +72,77 @@ type PCmd struct {
 	GameId    int
 	Cmd       int
 	Timestamp int64
+	RKey  string
 }
 
 var pgames = make([]PeeeGame, 3)
+
+func findGameById(gameId int) *PeeeGame{
+	
+	for i, agame := range pgames {
+		if agame.Id == gameId {
+			return &pgames[i]
+		} //end if
+	}
+	return nil
+	
+}//end find game
+
+func processCmd(cmd *PCmd){
+	game := findGameById(cmd.GameId)
+	if game == nil {
+		log.Println("\n\nBAD NEWS CANT FIND\n\n")
+		return;
+	}
+	
+	pindex := 0
+
+	if(cmd.RKey == game.Players[1].RKey){
+		pindex  = 1
+	}
+	_ = pindex 
+
+switch cmd.Cmd {
+    case PC_UP: {
+        log.Println("CMD UP")
+        
+        
+        
+        game.Players[pindex].YPos=   game.Players[pindex].YPos - 1;
+        
+        
+        return
+	}
+	
+    case PC_DOWN: {
+        log.Println("CMD DOWN")
+        game.Players[pindex].YPos =    game.Players[pindex].YPos + 1;
+         
+        
+         
+        return
+       }
+    case PC_LEFT: {
+        log.Println("CMD LEFR")
+        return
+        
+    }
+     case PC_ACTION_A:{
+        log.Println("CMD PC_ACTION_A")
+        return
+	}
+     case PC_ACTION_B:{
+		 
+        log.Println("CMD PC_ACTION_B")
+		return
+	} 
+
+}//end switch
+  
+
+	
+}//end process
+ 
 
 func webHandlerCmd(ws *websocket.Conn) {
 
@@ -80,18 +163,10 @@ func webHandlerCmd(ws *websocket.Conn) {
 
 		json.Unmarshal([]byte(reply), &rxCmd)
 		log.Println(fmt.Sprintf("RX-CMD:GameId(%d) , CMD(%d)   ", rxCmd.GameId, rxCmd.Cmd))
-
-		/*
-
-
-			err = websocket.Message.Send(ws, msg)
-			if err != nil {
-				fmt.Println("Can't send")
-				break
-			}
-		*/
+		
 
 		fmt.Println("RX:" + reply + ",ip=" + ws.Request().RemoteAddr)
+		processCmd(rxCmd)
 	}
 }
 func webHandler(ws *websocket.Conn) {
@@ -135,6 +210,28 @@ func RESTGameNew(w http.ResponseWriter, r *http.Request) {
 		} //end if
 	}
 }
+
+
+func RESTGameGet(c web.C, w http.ResponseWriter, r *http.Request) {
+
+
+	gameidStr := c.URLParams["gameid"]
+	gameId, err := strconv.Atoi(gameidStr)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+
+	for i, agame := range pgames {
+		if agame.Id == gameId {
+			str, _ := json.Marshal(pgames[i])
+			fmt.Fprintf(w, string(str))
+			return
+		} //end if
+	}
+}
+
+
 
 func RESTGameJoin(w http.ResponseWriter, r *http.Request) {
 	gameIdstr := r.URL.Query()["gameid"][0]
@@ -193,8 +290,10 @@ func main() {
 
 	goji.Post("/rest/game", RESTGameNew)
 	goji.Get("/rest/game", RESTGameList)
+	goji.Get("/rest/game/:gameid", RESTGameGet)
+	
 	goji.Post("/rest/gamejoin", RESTGameJoin)
-	goji.Post("/rest/game", RESTGameList)
+
 
 	log.Println("PeeeServer")
 
