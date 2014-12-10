@@ -30,10 +30,13 @@ function getWorldData(){
 		$.ajax({ 
 crossDomain: true,
 
-url:"http://peee.dev/rest/game/"+game_id,
+url:"http://peeepong.host/rest/game/"+game_id,
 dataType: 'json',
 success:function(data){
-return data;
+
+
+	updateWorld(data);
+
 }
 
 
@@ -55,9 +58,10 @@ return data;
 
 }
 
-function updateWorld(){
+function updateWorld(data){
 	//{"Id":14902,"State":2,"PlayerCount":0,"Players":[{"XPos":10,"YPos":10,"ZPos":0,"Name":"","Points":0,"Damage":0,"PowerUp":0,"EpocTime":0,"Ip":"","Score":0,"RKey":""},{"XPos":10,"YPos":50,"ZPos":0,"Name":"","Points":0,"Damage":0,"PowerUp":0,"EpocTime":0,"Ip":"","Score":0,"RKey":""}],"PCount":0}
-	var res = getWorldData();
+	var res = data;
+console.log(res.Id);
 	var p1res = res.Players[0];
 	if (p1res) {
 		P1Data.x = p1res.XPos;
@@ -81,7 +85,8 @@ function drawWorld(){
 }
 	
 function game_loop(){
-	updateWorld()
+	getWorldData();
+	
 	drawWorld()
 }
 
@@ -107,17 +112,38 @@ function initGame(){
 
 $( document ).ready(function() {
 
+
+    ws =  new WebSocket("ws://peeepong.host:8080/rest/cmd");
+        ws.onmessage = function(e) {
+         
+         
+          
+        }
+  
+  
+  
+  
 		initGame();
+
+		game_loop();
+
+
+
+
 
 		window.setInterval(function() {
 			game_loop();
-			}, 5000);
+			}, 50);
 });
 
 
 </script>
 </head>
 <body>
+	<div id="cstatus">
+	
+	</div>
+	
 <canvas id="myCanvas" width="1000" height="1000" style="border:1px solid #000000;">
 </canvas>
 </body>

@@ -7,42 +7,44 @@ import (
 	"flag"
 	"fmt"
 	"log"
-	"net/http"
 	"math/rand"
+	"net/http"
 	"time"
 
 	"encoding/json"
-	"strconv"
 	"github.com/zenazn/goji/web"
+	"strconv"
 )
 
 const (
-	GS_EMPTY   = 0
-	GS_READY   = 2
-	
+	GS_EMPTY = 0
+	GS_READY = 2
+
 	GS_PLAYING = 4
 	GS_DONE_P1 = 10
 	GS_DONE_P2 = 12
+	
 )
 
 const (
-	PC_UP   = 1
-	
-	PC_DOWN   = 2
-	
+	PC_UP = 1
+
+	PC_DOWN = 2
+
 	PC_LEFT = 3
-	
+
 	PC_RIGHT = 4
-	
+
 	PC_ACTION_A = 10
 	PC_ACTION_B = 12
+	PC_GAME_GET = 20
 )
 
 const (
 	PDEF_P1_XPOS = 10
 	PDEF_P1_YPOS = 10
 
-	PDEF_P2_XPOS = 10
+	PDEF_P2_XPOS = 500
 	PDEF_P2_YPOS = 50
 )
 
@@ -58,6 +60,26 @@ type PeePlayer struct {
 	Ip       string
 	Score    int
 	RKey     string
+	Height   int
+	Width    int
+}
+
+type PeeItem struct {
+	XPos int
+	YPos int
+	ZPos int
+	Name string
+
+	VX int
+	VY int
+	AX int
+	AY int
+
+	Src             string
+	Visible         int
+	DefaultStepSize int
+	Height          int
+	Width           int
 }
 
 type PeeeGame struct {
@@ -66,83 +88,104 @@ type PeeeGame struct {
 	PlayerCount int
 	Players     [2]PeePlayer
 	PCount      int
+	WorldWidth  int
+	WorldHeight int
+	Ball        PeeItem
+	PowerUp     PeeItem
 }
 
 type PCmd struct {
 	GameId    int
 	Cmd       int
 	Timestamp int64
-	RKey  string
+	RKey      string
 }
 
 var pgames = make([]PeeeGame, 3)
 
-func findGameById(gameId int) *PeeeGame{
-	
+func findGameById(gameId int) *PeeeGame {
+
 	for i, agame := range pgames {
 		if agame.Id == gameId {
 			return &pgames[i]
 		} //end if
 	}
 	return nil
-	
-}//end find game
 
-func processCmd(cmd *PCmd){
+} //end find game
+
+func processCmd(cmd *PCmd) *PeeeGame {
+	stepSize := 50
+
 	game := findGameById(cmd.GameId)
 	if game == nil {
 		log.Println("\n\nBAD NEWS CANT FIND\n\n")
-		return;
+		return nil
 	}
-	
+
 	pindex := 0
 
-	if(cmd.RKey == game.Players[1].RKey){
-		pindex  = 1
+	if cmd.RKey == game.Players[1].RKey {
+		pindex = 1
 	}
-	_ = pindex 
+	_ = pindex
 
-switch cmd.Cmd {
-    case PC_UP: {
-        log.Println("CMD UP")
-        
-        
-        
-        game.Players[pindex].YPos=   game.Players[pindex].YPos - 1;
-        
-        
-        return
-	}
+	switch cmd.Cmd {
+	case PC_UP:
+		{
+			log.Println("CMD UP")
+
+			game.Players[pindex].YPos = game.Players[pindex].YPos - stepSize
+
+			if game.Players[pindex].YPos < 1 {
+				game.Players[pindex].YPos = 0
+			}
+
+			return nil
+		}
+
+	case PC_DOWN:
+		{
+			log.Println("CMD DOWN")
+			game.Players[pindex].YPos = game.Players[pindex].YPos + stepSize
+
+			if game.Players[pindex].YPos > (game.WorldHeight - game.Players[pindex].Height) {
+				game.Players[pindex].YPos = (game.WorldHeight - game.Players[pindex].Height)
+			}
+
+			return nil
+		}
+	case PC_LEFT:
+		{
+			log.Println("CMD LEFR")
+			return nil
+
+		}
+	case PC_ACTION_A:
+		{
+			log.Println("CMD PC_ACTION_A")
+			return nil
+		}
+	case PC_ACTION_B:
+		{
+
+			log.Println("CMD PC_ACTION_B")
+			return nil
+		}
+		
+	case PC_GAME_GET:
+		{
+
+			return game
+
+
+		}
+
+	} //end switch
 	
-    case PC_DOWN: {
-        log.Println("CMD DOWN")
-        game.Players[pindex].YPos =    game.Players[pindex].YPos + 1;
-         
-        
-         
-        return
-       }
-    case PC_LEFT: {
-        log.Println("CMD LEFR")
-        return
-        
-    }
-     case PC_ACTION_A:{
-        log.Println("CMD PC_ACTION_A")
-        return
-	}
-     case PC_ACTION_B:{
-		 
-        log.Println("CMD PC_ACTION_B")
-		return
-	} 
+	return nil
 
-}//end switch
-  
-
-	
-}//end process
- 
+} //end process
 
 func webHandlerCmd(ws *websocket.Conn) {
 
@@ -150,7 +193,7 @@ func webHandlerCmd(ws *websocket.Conn) {
 
 		//msg :=""
 
-		fmt.Println("DEBUG:ip=" + ws.Request().RemoteAddr)
+		////fmt.Println("DEBUG:ip=" + ws.Request().RemoteAddr)
 
 		var reply string
 		err := websocket.Message.Receive(ws, &reply)
@@ -162,11 +205,18 @@ func webHandlerCmd(ws *websocket.Conn) {
 		rxCmd := &PCmd{}
 
 		json.Unmarshal([]byte(reply), &rxCmd)
-		log.Println(fmt.Sprintf("RX-CMD:GameId(%d) , CMD(%d)   ", rxCmd.GameId, rxCmd.Cmd))
-		
+	////	log.Println(fmt.Sprintf("RX-CMD:GameId(%d) , CMD(%d)   ", rxCmd.GameId, rxCmd.Cmd))
 
-		fmt.Println("RX:" + reply + ",ip=" + ws.Request().RemoteAddr)
-		processCmd(rxCmd)
+	/////	fmt.Println("RX:" + reply + ",ip=" + ws.Request().RemoteAddr)
+		ws_resp := processCmd(rxCmd)
+		if ws_resp != nil {
+		
+			str, _ := json.Marshal(ws_resp)
+			websocket.Message.Send(ws, str)
+			//	fmt.Fprintf(w, string(str))
+		
+		}//end processCmd
+		
 	}
 }
 func webHandler(ws *websocket.Conn) {
@@ -211,16 +261,13 @@ func RESTGameNew(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-
 func RESTGameGet(c web.C, w http.ResponseWriter, r *http.Request) {
-
 
 	gameidStr := c.URLParams["gameid"]
 	gameId, err := strconv.Atoi(gameidStr)
 	if err != nil {
 		fmt.Println(err)
 	}
-
 
 	for i, agame := range pgames {
 		if agame.Id == gameId {
@@ -230,8 +277,6 @@ func RESTGameGet(c web.C, w http.ResponseWriter, r *http.Request) {
 		} //end if
 	}
 }
-
-
 
 func RESTGameJoin(w http.ResponseWriter, r *http.Request) {
 	gameIdstr := r.URL.Query()["gameid"][0]
@@ -244,7 +289,7 @@ func RESTGameJoin(w http.ResponseWriter, r *http.Request) {
 		fmt.Println(err)
 	}
 
-	for i, _ := range pgames {
+	for i := range pgames {
 		if gameId == pgames[i].Id && pgames[i].State == GS_READY {
 
 			if pgames[i].Players[0].RKey == "" {
@@ -261,6 +306,10 @@ func RESTGameJoin(w http.ResponseWriter, r *http.Request) {
 				http.Error(w, "Too Many Players", 429)
 			}
 
+			if pgames[i].PCount > 1 {
+				pgames[i].State = GS_PLAYING
+			}
+
 			str, _ := json.Marshal(pgames[i])
 			fmt.Fprintf(w, string(str))
 			fmt.Println("%#v", pgames[i])
@@ -274,13 +323,35 @@ func setupGame(agame *PeeeGame) {
 	rand.Seed(time.Now().UTC().UnixNano())
 	agame.Id = rand.Intn(1000000) + 1
 	agame.State = GS_READY
+
+	agame.WorldWidth = 1000
+	agame.WorldHeight = 800
+
+	agame.Ball.Width = 50
+	agame.Ball.Height = 50
+
+	agame.Ball.XPos = agame.WorldWidth/2 - (agame.Ball.Width / 2)
+	agame.Ball.YPos = agame.WorldHeight/2 - (agame.Ball.Height / 2)
+	agame.Ball.Visible = 1
+	agame.Ball.Src = "http://peeepong.host/ball.png"
+
 	agame.Players[0].XPos = PDEF_P1_XPOS
 	agame.Players[0].YPos = PDEF_P1_YPOS
 	agame.Players[0].RKey = ""
+	agame.Players[0].Height = 160
+	agame.Players[0].Width = 160
 
 	agame.Players[1].XPos = PDEF_P2_XPOS
 	agame.Players[1].YPos = PDEF_P2_YPOS
 	agame.Players[1].RKey = ""
+
+	agame.Players[1].Height = 160
+	agame.Players[1].Width = 160
+
+}
+
+func updateWorlds() {
+
 }
 
 func main() {
@@ -291,9 +362,8 @@ func main() {
 	goji.Post("/rest/game", RESTGameNew)
 	goji.Get("/rest/game", RESTGameList)
 	goji.Get("/rest/game/:gameid", RESTGameGet)
-	
-	goji.Post("/rest/gamejoin", RESTGameJoin)
 
+	goji.Post("/rest/gamejoin", RESTGameJoin)
 
 	log.Println("PeeeServer")
 

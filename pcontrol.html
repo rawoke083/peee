@@ -16,7 +16,7 @@ var GLAST_CMD_TIME=0;
 function rc(cmd){
 	
 	
-	if(GLAST_CMD_TIME == 0  || (Date.now()- GLAST_CMD_TIME) > 10)
+	if(GLAST_CMD_TIME == 0  || (Date.now()- GLAST_CMD_TIME) > 5)
 	{
 	
 	
@@ -102,7 +102,7 @@ $(function() {
     
     ws =  new WebSocket("ws://peeepong.host:8080/rest/cmd");
         ws.onmessage = function(e) {
-          console.log("RX:" + event.data);
+          //console.log("RX:" + event.data);
         }
   
   
@@ -121,11 +121,11 @@ $(function() {
 	
 	 $('#dostatus').text(eventData.beta);
 	 //up
-	 if(eventData.beta > 20 && eventData.beta <  85){
+	 if(eventData.beta > 1 && eventData.beta <  85){
 		rc(1);
 		
 	 }//down
-	 else if(eventData.beta < -20 && eventData.beta > -85)
+	 else if(eventData.beta < -1 && eventData.beta > -85)
 	 {
 		 rc(2);
 	 }
@@ -151,7 +151,7 @@ $(function() {
       
       
 	<h1>PeePong - Control</h1>
-	<a href="/index3.html">GAME LIST</a>
+	<a href="/index.html">GAME LIST</a>
 	
 	<div id="pstatus" style="padding:20px;">
 		NOT CONNECTED
