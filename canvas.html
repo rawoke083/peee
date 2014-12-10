@@ -8,21 +8,37 @@ var imgP2;
 
 
 var P1Data = {
-		x : 20,
-		y : 10,
-		
-	}
+	x : 20,
+	y : 10,
+}
 
 var P2Data = {
-		x : 1,
-		y : 1,
-		
-	}
+	x : 1,
+	y : 1,
+}
 	
 	
 function getWorldData(){
 		
-//get ajax code
+	var params = [];
+	window.location.search.replace(/[?&]+([^=&]+)=([^&]*)/gi,function(str,key,value)
+			{params[key] = value;});
+
+	game_id = params['gameid'];
+	if (game_id) {
+
+		$.ajax({ 
+crossDomain: true,
+
+url:"http://peee.dev/rest/game/"+game_id,
+dataType: 'json',
+success:function(data){
+return data;
+}
+
+
+});
+}
 
 /*
 
@@ -40,64 +56,62 @@ function getWorldData(){
 }
 
 function updateWorld(){
- P1Data.x =  P1Data.x + 5;
- 
- 
-
- 
+	//{"Id":14902,"State":2,"PlayerCount":0,"Players":[{"XPos":10,"YPos":10,"ZPos":0,"Name":"","Points":0,"Damage":0,"PowerUp":0,"EpocTime":0,"Ip":"","Score":0,"RKey":""},{"XPos":10,"YPos":50,"ZPos":0,"Name":"","Points":0,"Damage":0,"PowerUp":0,"EpocTime":0,"Ip":"","Score":0,"RKey":""}],"PCount":0}
+	var res = getWorldData();
+	var p1res = res.Players[0];
+	if (p1res) {
+		P1Data.x = p1res.XPos;
+		P1Data.y = p1res.YPos;
+	}
+	var p2res = res.Players[1];
+	if (p2res) {
+		P2Data.x = p2res.XPos;
+		P2Data.y = p2res.YPos;
+	}
 }
 
 function drawWorld(){
+	var canvas = document.getElementById('myCanvas');
+	var context = canvas.getContext('2d');
 
- var canvas = document.getElementById('myCanvas');
- var context = canvas.getContext('2d');
- 	canvas.width =  canvas.width;
- 	
- 	
-  context.drawImage(imgP1,P1Data.x, P1Data.y);
-   context.drawImage(imgP2,P2Data.x, P2Data.y);
+	canvas.width = canvas.width;
+
+	context.drawImage(imgP1,P1Data.x, P1Data.y);
+	context.drawImage(imgP2,P2Data.x, P2Data.y);
 }
 	
 function game_loop(){
 	updateWorld()
 	drawWorld()
-		
-
 }
 
 function initGame(){
 	
 	var canvas = document.getElementById('myCanvas');
-    var context = canvas.getContext('2d');
+	var context = canvas.getContext('2d');
 	imgP1 =  new Image();
 	imgP2 = new Image();
 
-      imgP1.onload = function() {
-         context.drawImage(imgP1,P1Data.x, P1Data.y);
-      };
-      
-      imgP2.onload = function() {
-		
-        context.drawImage(imgP2,P2Data.x, P2Data.y);
-      };
-      
-      imgP1.src = 'http://peeepong.host/p1.jpg';
-      imgP2.src = 'http://peeepong.host/p1.jpg';
+	imgP1.onload = function() {
+		context.drawImage(imgP1,P1Data.x, P1Data.y);
+	};
+
+	imgP2.onload = function() {
+		context.drawImage(imgP2,P2Data.x, P2Data.y);
+	};
+
+	imgP1.src = 'img/p1.png';
+	imgP2.src = 'img/p2.png';
 }
 
 
 $( document ).ready(function() {
-    
- initGame();
- 
-   window.setInterval(function() {
-        game_loop();
-    }, 20);
-    
-    
 
+		initGame();
 
-    
+		window.setInterval(function() {
+			game_loop();
+			}, 5000);
 });
 
 
