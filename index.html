@@ -40,7 +40,7 @@ function list_games(){
            var items = [];
            if (data[index].Id > 0){
 				 
-				   items.push('<li> <a href="/canvas.html?gameid=' + data[index].Id+ '"> As TV (' + data[index].Id+ ')| </a> | <a href="/pcontrol.html?gameid=' + data[index].Id+ '"> As RemoteControl -  Players('+data[index].PCount+')</a></li>');
+				   items.push('<li> <h4><a href="/canvas.html?gameid=' + data[index].Id+ '"> As TV (' + data[index].Id+ ')| </a> | <a href="/pcontrol.html?gameid=' + data[index].Id+ '"> As RemoteControl -  Players('+data[index].PCount+')</a></h4></li>');
 
 		   }
            $('#glist').append( items.join('') );
@@ -62,19 +62,37 @@ function list_games(){
 
 		</script>
 	</head>
-	<body onload='list_games();'>
+	<body onload='list_games();'  style="font-family:sans;font-size:30px;">
 
       
+
       
-	<h1>PeePong</h1>
+	<h1 align="center"><img src="img/logo.png"></h1>
 	
-	<div id="GameList">
+	
+	 
+      
+      
+	<div id="GameList" style="text-align:center;">
+		<h3>Games</h3>
 		<ul id="glist">
-		</ul>	
+			<li></li>
+		</ul>
+			
 	</div>
+	<p align="center">
+		<table align="center">
+			<tr>
+				<td><img src='img/button_refresh.png' onclick="list_games();"></td>
+				
+				<td><img src='img/button_new.png' onclick="new_game();"></td>
+				
+			</tr>
+		</table>
+		
+	</p>
 	
-	<input type="button" value="List Games" onclick="list_games();">
-	<input type="button" value="New Game" onclick="new_game();">
+
 	
 	</body>
 </html>
