@@ -5,108 +5,141 @@
 
 var imgP1; 
 var imgP2;
+var imgBall;
 
 
-var P1Data = {
-	x : 20,
-	y : 10,
-}
 
-var P2Data = {
-	x : 1,
-	y : 1,
-}
+var GLAST_CMD_TIME=0;
+var GGameId = 0;
+var GWData = 0;
+var canvas = 0; 
+var context = 0; 
+function ws_cmd(cmd,cmd2){
 	
+	
+	if( ws.readyState ==1  && (GLAST_CMD_TIME == 0  || (Date.now()- GLAST_CMD_TIME) > 1))
+	{
+
+		var cmdObj = {
+			GameId:parseInt(GGameId),
+			Cmd:cmd,
+			Cmd2:cmd2,
+			Rkey:"",
+			timestamp: Date.now()
+		};
+  
+		ws.send(JSON.stringify(cmdObj));
+		GLAST_CMD_TIME =   Date.now();
+		
+	}//end timecheck 
+	
+}//end ws_cmd
+
+
+
+
+
+
 	
 function getWorldData(){
 		
-	var params = [];
-	window.location.search.replace(/[?&]+([^=&]+)=([^&]*)/gi,function(str,key,value)
-			{params[key] = value;});
 
-	game_id = params['gameid'];
-	if (game_id) {
-
-		$.ajax({ 
-crossDomain: true,
-
-url:"http://peeepong.host/rest/game/"+game_id,
-dataType: 'json',
-success:function(data){
-
-
-	updateWorld(data);
-
+	if (GGameId > 0) {
+		ws_cmd(20,0);
+		
+	}
 }
 
 
-});
-}
-
-/*
 
 
-	Gamedata.state (1,2,3) ready,playing, done(win player 2) ???
-	gamedata.players[0].x
-	gamedata.players[0].y
-	
-	gamedata.players[1].x
-	gamedata.players[2].y
-	
 
-*/
-
-}
 
 function updateWorld(data){
-	//{"Id":14902,"State":2,"PlayerCount":0,"Players":[{"XPos":10,"YPos":10,"ZPos":0,"Name":"","Points":0,"Damage":0,"PowerUp":0,"EpocTime":0,"Ip":"","Score":0,"RKey":""},{"XPos":10,"YPos":50,"ZPos":0,"Name":"","Points":0,"Damage":0,"PowerUp":0,"EpocTime":0,"Ip":"","Score":0,"RKey":""}],"PCount":0}
-	var res = data;
-console.log(res.Id);
-	var p1res = res.Players[0];
-	if (p1res) {
-		P1Data.x = p1res.XPos;
-		P1Data.y = p1res.YPos;
-	}
-	var p2res = res.Players[1];
-	if (p2res) {
-		P2Data.x = p2res.XPos;
-		P2Data.y = p2res.YPos;
-	}
+	
+	
 }
 
 function drawWorld(){
-	var canvas = document.getElementById('myCanvas');
+	if(GWData == 0 ){
+		return;
+	}
+	
+	
 	var context = canvas.getContext('2d');
+	
+	// buffer canvas
+var canvas2 = document.createElement('canvas');
+canvas2.width = 1300;
+canvas2.height = 600;
+var context2 = canvas2.getContext('2d');
+	
+	context2.save();
+	context2.clearRect(0, 0, canvas.width, canvas.height);
+	context2.drawImage(imgP1,GWData.Players[0].XPos, GWData.Players[0].YPos);
+	context2.drawImage(imgP2,GWData.Players[1].XPos, GWData.Players[1].YPos);
+	context2.drawImage(imgBall,GWData.Ball.XPos,GWData.Ball.YPos);
+	
+	
+	
+	 context2.restore();
+	
+	
+	
+		context.save();
+		context.clearRect(0, 0, canvas.width, canvas.height);
+	context.drawImage(canvas2, 0, 0);
 
-	canvas.width = canvas.width;
-
-	context.drawImage(imgP1,P1Data.x, P1Data.y);
-	context.drawImage(imgP2,P2Data.x, P2Data.y);
+    
+	 context.restore();
+	 $("#p1score").text(GWData.Players[0].Score);
+	 $("#p2score").text(GWData.Players[1].Score);
+	 
+	 
 }
 	
 function game_loop(){
 	getWorldData();
-	
+	//updateWorld(0);
 	drawWorld()
 }
 
 function initGame(){
+	 canvas =  document.getElementById('myCanvas');
 	
-	var canvas = document.getElementById('myCanvas');
-	var context = canvas.getContext('2d');
+	context = canvas.getContext('2d');
+	
 	imgP1 =  new Image();
 	imgP2 = new Image();
-
+	imgBall = new Image();
+	
+	imgP1.src = 'img/p1.png';
+	imgP2.src = 'img/p2.png';
+	imgBall.src= 'img/ball.png';
+	
 	imgP1.onload = function() {
-		context.drawImage(imgP1,P1Data.x, P1Data.y);
+		context.drawImage(imgP1,0, 0);
 	};
 
 	imgP2.onload = function() {
-		context.drawImage(imgP2,P2Data.x, P2Data.y);
+		context.drawImage(imgP2,0, 0);
+	};
+	
+	imgBall.onload = function() {
+		context.drawImage(imgBall,0, 0);
 	};
 
-	imgP1.src = 'img/p1.png';
-	imgP2.src = 'img/p2.png';
+	
+	
+	
+	
+	
+	var params = [];
+	window.location.search.replace(/[?&]+([^=&]+)=([^&]*)/gi,function(str,key,value)
+	{params[key] = value;});
+	GGameId = params['gameid'];
+	
+	
 }
 
 
@@ -114,37 +147,53 @@ $( document ).ready(function() {
 
 
     ws =  new WebSocket("ws://peeepong.host:8080/rest/cmd");
+       
+       
+       
         ws.onmessage = function(e) {
-         
-         
-          
+         GWData = JSON.parse(e.data);
         }
-  
-  
-  
+ 
   
 		initGame();
 
-		game_loop();
-
-
-
-
-
 		window.setInterval(function() {
 			game_loop();
-			}, 50);
+			}, 10);
 });
 
 
 </script>
 </head>
-<body>
-	<div id="cstatus">
-	
-	</div>
-	
-<canvas id="myCanvas" width="1000" height="1000" style="border:1px solid #000000;">
+<body style="font-family:sans;font-size:24px;font-weight:bold;">
+<p align="center">
+	<img src="img/logo.png" />
+</p>
+
+
+
+<canvas id="myCanvas" align="center" width="1300" height="600" style="border:1px solid #000000;position: absolute; z-index: 1;top:100px;left:60px;">
 </canvas>
+
+<table style='width:1300px;position:absolute;top:710px;left:10px;'>
+	<tr>
+		 <td align="center">
+			Player 1
+		 </td>
+		 <td align="center">
+			Player 2
+		 </td>
+	</tr>
+	
+	<tr>
+		 <td align="center" id="p1score">
+			0
+		 </td>
+		 <td align="center" id="p2score">
+			0
+		 </td>
+	</tr>
+</table>
+
 </body>
 </html>

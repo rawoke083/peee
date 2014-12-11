@@ -12,30 +12,35 @@ var GPlayerIndex=0;
 var GRkey = Math.floor((Math.random() * 10000000) + 1) +  Math.floor((Math.random() * 10000000) + 1)
 var ws = 0;
 var GLAST_CMD_TIME=0;
+var RC_LOCK = 0;
+var RC_LOCK_TILT = 0;
+function rc(cmd,cmd2,rep){
+	
+	
 
-function rc(cmd){
-	
-	
-	if(GLAST_CMD_TIME == 0  || (Date.now()- GLAST_CMD_TIME) > 5)
-	{
-	
-	
 	
 
 	
 var cmdObj = {
     GameId:parseInt(GGameId),
     Cmd:cmd,
+    Cmd2:cmd2,
     Rkey:GRkey,
  
     timestamp: Date.now()
   };
   
      
-   var data = cmd
-   ws.send(JSON.stringify(cmdObj));
+  
+   var jdata = JSON.stringify(cmdObj)
+   for (i=0; i < rep; i++)
+   {
+		ws.send(jdata);
+   
+   }
+  
    GLAST_CMD_TIME =   Date.now();
-}//end timecheck 
+
 	
 }//end rc
 
@@ -66,7 +71,7 @@ function remote_setup(){
 
 
 function join_game(){
-
+ $('#pindex2').html("<img src='img/p1.png'/>");
     			$.ajax({
   type: "POST",
   url: "http://peeepong.host/rest/gamejoin?gameid="+GGameId+"&rkey="+GRkey,
@@ -82,6 +87,14 @@ function join_game(){
 	  $('#pstatus').text("Connected - Game ("+GGameId+")");
 	  $('#pindex').text("Player ("+(GPlayerIndex+1)+")");
 	  
+	  if(GPlayerIndex==0){
+	  $('#pindex2').html("<img src='img/p1.png'/>");
+	 }else{
+		$('#pindex2').html("<img src='img/p2.png'/>");
+	} 
+	 
+		  
+	  
   }//end succues
  
 });//end ajax;
@@ -93,47 +106,83 @@ function join_game(){
 
 
 
-
-
+ 
 $(function() {
     console.log( "ready!" );
     remote_setup();
-    
+  
     
     ws =  new WebSocket("ws://peeepong.host:8080/rest/cmd");
-        ws.onmessage = function(e) {
-          //console.log("RX:" + event.data);
-        }
-  
-  
+       
+  /*
+if (window.DeviceMotionEvent) {
+	window.addEventListener('devicemotion',function(eventData){
+		return;
+		var acceleration = eventData.acceleration;
+   $('#dostatus').text(window.orientation+"------   "+acceleration.z);
+   
+   if ( RC_LOCK == 0 ) {
+   RC_LOCK = 1;
+   
+   if(acceleration.z > 5){
+		 
+		 rc(2,0,Math.abs(acceleration.z)); 
+   }else if (acceleration.z < -5){
+		rc(1,0,Math.abs(acceleration.z)) ;
+   }
+   
+   
+   RC_LOCK = 0;
+   
+   
+}//end lock
+
+		});//end anon-func
+	
+ 
+}//motion-event-end
+*/
+
   
   if(window.DeviceOrientationEvent){
 		
-		
-		if(GGameId==0){
+	
+	if(GGameId==0){
 			return;
-		}
+	}
 		
 		
 		
 		
 	window.addEventListener('deviceorientation',function(eventData){
 	
-	 $('#dostatus').text(eventData.beta);
+	if (RC_LOCK_TILT==0){
+		RC_LOCK_TILT = 1;
 	 //up
-	 if(eventData.beta > 1 && eventData.beta <  85){
-		rc(1);
+	 var vert = 0;
+	 var horz = 0
+	 if(eventData.beta > 10 && eventData.beta <  75){
+		vert = 1;
 		
 	 }//down
-	 else if(eventData.beta < -1 && eventData.beta > -85)
+	 else if(eventData.beta < -20 && eventData.beta > -75)
 	 {
-		 rc(2);
+		 vert = 2;
+	 
+	 }
+	 if(eventData.gamma > 15 && eventData.gamma <  75){
+		
+		horz = 4;
+		
+	 }//down
+	 else if(eventData.gamma < -15 && eventData.gamma > -75)
+	 {
+		 horz = 3;
 	 }
 	 
-	 
-	 
-	 
-	 
+	  rc(vert,horz,4) 
+	 RC_LOCK_TILT = 0;
+ }//end-lock
    });
    
    
@@ -146,46 +195,47 @@ $(function() {
 });
 		</script>
 	</head>
-	<body>
+	<body style="font-family:sans;">
 
       
-      
-	<h1>PeePong - Control</h1>
-	<a href="/index.html">GAME LIST</a>
+	<h1 align="center"><img src="img/c2.png"></h1>
 	
-	<div id="pstatus" style="padding:20px;">
+	
+	<h3 align="center"><a href="/index.html">GAME LIST</a></h3>
+	
+	<div id="pstatus" style="padding:10px;color:red;font-size:20px;text-align:center;">
 		NOT CONNECTED
 	</div>
 	
-	<div id="dostatus" style="padding:20px;">
+
+	
+	<div id="pindex" style="padding:10px;color:red;font-size:42px;text-align:center;">		
+	</div>
+	
+	<div id="pindex2" style="padding:10px;color:red;font-size:42px;text-align:center;">		
 		
 	</div>
 	
-	
-	
-	<div id="pindex" style="padding:20px;">
-		Player X
-	</div>
-	
-	
-	<div id="rcontrols" style="width:100%;">
-		<table" border="1" style="padding:10px;margin:10px;">
-			<tr>
-				<td><input style="padding:10px;"  type="button" value="LEFT" onclick="rc(1);"></td>
-				
-				<td><input style="padding:10px;"  type="button" value="ACTION_A" onclick="rc(10);"></td>
-				<td><input style="padding:10px;"  type="button" value="ACTION_B" onclick="rc(12);"></td>
-				
-				<td><input style="padding:10px;"  type="button" value="RIGHT" onclick="rc(2);"></td>
-				
-			</tr>
-		</table>
-	</div>
-	<p>
+	<p align="center">
+		<img src="img/button1.png" align="center" onclick="rc(10,0,1);"/>
 	</p>
-	<input type="button" value="Join Game" onclick="join_game();">
 	
+	<p align="center">
+		<img src="img/button1.png" align="center"/>
+		
+	</p>
+	<p align="center">
+		<br />
+		<br />
+		<br />
+		<br />
+		<br />
+		<br />
+		<br />
+		<img src="img/thumb.png" border="1" align="center"/>
+	</p>
 	
 	
 	</body>
+	</div>
 </html>
