@@ -10,7 +10,7 @@
 			{
 			$.ajax({
   type: "POST",
-  url: "http://peeepong.host/rest/game",
+  url: "http://10.0.0.16/rest/game",
   data: "koos=1",
   success:function(data){
 	  list_games()
@@ -29,7 +29,7 @@ function list_games(){
   $.ajax({ 
 	   crossDomain: true,
 	    
-	  url:"http://peeepong.host/rest/game",
+	  url:"http://10.0.0.16/rest/game",
 	  dataType: 'json',
 	  success:function(data){
    

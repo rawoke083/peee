@@ -16,6 +16,10 @@ var RC_LOCK = 0;
 var RC_LOCK_TILT = 0;
 function rc(cmd,cmd2,rep){
 	
+	if(ws==0){
+		
+		return;
+	}
 	
 
 	
@@ -33,11 +37,13 @@ var cmdObj = {
      
   
    var jdata = JSON.stringify(cmdObj)
+   if(jdata != undefined){
    for (i=0; i < rep; i++)
    {
 		ws.send(jdata);
    
    }
+  }
   
    GLAST_CMD_TIME =   Date.now();
 
@@ -55,9 +61,9 @@ function remote_setup(){
 
 
 	GGameId = params['gameid'];
-
 	rkey = params['rkey'];
-	if(rkey  == undefined ) {
+	
+	if(rkey  == undefined || rkey==0) {
 		window.location = window.location+"&rkey="+GRkey;
 		
 	}
@@ -67,17 +73,25 @@ function remote_setup(){
 		
 	}
 	
+	
+	
 }
 
 
 function join_game(){
- $('#pindex2').html("<img src='img/p1.png'/>");
+ 
+ 
     			$.ajax({
   type: "POST",
-  url: "http://peeepong.host/rest/gamejoin?gameid="+GGameId+"&rkey="+GRkey,
-  data: "koos=1",
+  url: "http://10.0.0.16/rest/gamejoin?gameid="+GGameId+"&rkey="+GRkey,
+	async:false,
    dataType: 'json',
   success:function(data){
+	  if(data == 0 || data == undefined){
+		
+		return ;
+	  }
+	  
 	  if(data.Players[0].RKey==GRkey){
 	  GPlayerIndex = 0;
 	  }else if(data.Players[1].RKey==GRkey){
@@ -88,12 +102,12 @@ function join_game(){
 	  $('#pindex').text("Player ("+(GPlayerIndex+1)+")");
 	  
 	  if(GPlayerIndex==0){
-	  $('#pindex2').html("<img src='img/p1.png'/>");
+	  $('#pindex2').html("<img width='250px;' src='img/p1.png'/>");
 	 }else{
-		$('#pindex2').html("<img src='img/p2.png'/>");
+		$('#pindex2').html("<img  width='250px;' src='img/p2.png'/>");
 	} 
 	 
-		  
+		  navigator.vibrate([200, 300, 200]);
 	  
   }//end succues
  
@@ -112,12 +126,12 @@ $(function() {
     remote_setup();
   
     
-    ws =  new WebSocket("ws://peeepong.host:8080/rest/cmd");
-       
-  /*
+    ws =  new WebSocket("ws://10.0.0.16:8080/rest/cmd");
+  /*     
+  
 if (window.DeviceMotionEvent) {
 	window.addEventListener('devicemotion',function(eventData){
-		return;
+		
 		var acceleration = eventData.acceleration;
    $('#dostatus').text(window.orientation+"------   "+acceleration.z);
    
@@ -161,26 +175,26 @@ if (window.DeviceMotionEvent) {
 	 //up
 	 var vert = 0;
 	 var horz = 0
-	 if(eventData.beta > 10 && eventData.beta <  75){
+	 if(eventData.beta > 10 && eventData.beta <  85){
 		vert = 1;
 		
 	 }//down
-	 else if(eventData.beta < -20 && eventData.beta > -75)
+	 else if(eventData.beta < -10 && eventData.beta > -85)
 	 {
 		 vert = 2;
 	 
 	 }
-	 if(eventData.gamma > 15 && eventData.gamma <  75){
+	 if(eventData.gamma > 10 && eventData.gamma <  85){
 		
 		horz = 4;
 		
 	 }//down
-	 else if(eventData.gamma < -15 && eventData.gamma > -75)
+	 else if(eventData.gamma < -10 && eventData.gamma > -85)
 	 {
 		 horz = 3;
 	 }
 	 
-	  rc(vert,horz,4) 
+	  rc(vert,horz,1); 
 	 RC_LOCK_TILT = 0;
  }//end-lock
    });
@@ -190,19 +204,26 @@ if (window.DeviceMotionEvent) {
    
   }//end dev-event
   
-  
-  
+
 });
 		</script>
 	</head>
-	<body style="font-family:sans;">
+	<body style="font-family:sans;" oncontextmenu="return false;">
 
       <br />
       <br />
 	<h1 align="center"><img src="img/c2.png" width="60%"></h1>
 	
 	
-	<h3 align="center"><a href="/index.html">GAME LIST</a></h3>
+	<h1 align="center"><a href="/index.html">GAME LIST</a></h1>
+	<br />
+
+	<h1 align="center">
+		
+		<a href="#" onclick="window.location=window.location;">Re-CONNECT</a>
+	
+	</h1>
+	
 	
 	<div id="pstatus" style="padding:10px;color:red;font-size:20px;text-align:center;">
 		NOT CONNECTED
@@ -217,8 +238,7 @@ if (window.DeviceMotionEvent) {
 		
 	</div>
 	<br />
-	<br />
-	<br />
+	
 	<br />
 	<table align="center" width="100%" style="padding:50px;">
 		<tr>
@@ -259,7 +279,7 @@ if (window.DeviceMotionEvent) {
 		<br />
 		<br />
 	
-	<div style="position:fixed;width:100%;bottom:220px;text-align:center;"><img  border="1" width="400px" src="img/thumb.png" alt="" /></div>
+	<div style="position:fixed;width:100%;bottom:150px;text-align:center;"><img  border="1" width="200px" src="img/thumb.png" alt="" /></div>
 	
 	
 	</body>

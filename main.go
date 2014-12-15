@@ -110,7 +110,9 @@ var pgames = make([]PeeeGame, 3)
 func updateWorlds() {
 
 	for {
+
 		for i, _ := range pgames {
+
 			if pgames[i].State >= GS_KICKOFF && pgames[i].State <= GS_DONE {
 
 				pgames[i].Ball.XPos = pgames[i].Ball.XPos + pgames[i].Ball.VX
@@ -161,7 +163,9 @@ func updateWorlds() {
 						pgames[i].Ball.VY = -2
 
 					}
-					pgames[i].Ball.XPos += 100
+
+					pgames[i].Ball.XPos += 130
+
 				}
 				//hit right paddle
 				if pgames[i].Ball.XPos < pgames[i].Players[1].XPos+pgames[i].Players[1].Width && pgames[i].Ball.XPos+50 > pgames[i].Players[1].XPos &&
@@ -177,13 +181,17 @@ func updateWorlds() {
 						pgames[i].Ball.VY = -2
 
 					}
-					pgames[i].Ball.XPos -= 100
+
+					pgames[i].Ball.XPos -= 130
+
 				}
 
 			} //end if game state
 		} //end foreach games
 
+
 		time.Sleep(12000000)
+
 	} //end for-infinite
 } //end updatewords
 
@@ -199,7 +207,7 @@ func findGameById(gameId int) *PeeeGame {
 } //end find game
 
 func processCmd(cmd *PCmd) *PeeeGame {
-	stepSize := 20
+	stepSize := 30
 
 	game := findGameById(cmd.GameId)
 	if game == nil {
@@ -383,10 +391,11 @@ func RESTGameJoin(w http.ResponseWriter, r *http.Request) {
 	gameId, err := strconv.Atoi(gameIdstr)
 	if err != nil {
 		fmt.Println(err)
+		fmt.Fprintf(w, err.Error())
 	}
 
 	for i := range pgames {
-		if gameId == pgames[i].Id && pgames[i].State == GS_READY {
+		if gameId == pgames[i].Id && pgames[i].State >= GS_READY {
 
 			if pgames[i].Players[0].RKey == "" {
 				pgames[i].Players[0].RKey = rkeyIdstr
@@ -401,7 +410,7 @@ func RESTGameJoin(w http.ResponseWriter, r *http.Request) {
 			} else if pgames[i].Players[0].RKey == rkeyIdstr {
 
 			} else {
-				http.Error(w, "Too Many Players", 429)
+				///http.Error(w, "Too Many Players", 429)
 			}
 
 			if pgames[i].PCount > 1 {
@@ -433,8 +442,10 @@ func setupGame(agame *PeeeGame) {
 	agame.Ball.YPos = agame.WorldHeight/2 - (agame.Ball.Height / 2)
 
 	agame.Ball.Visible = 1
-	agame.Ball.VX = 2
-	agame.Ball.VY = 1
+
+	agame.Ball.VX = 4
+	agame.Ball.VY = 2
+
 
 	agame.Ball.Src = "http://peeepong.host/ball.png"
 

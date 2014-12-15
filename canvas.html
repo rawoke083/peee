@@ -75,7 +75,17 @@ canvas2.height = 600;
 var context2 = canvas2.getContext('2d');
 	
 	context2.save();
-	context2.clearRect(0, 0, canvas.width, canvas.height);
+//	context2.clearRect(0, 0, canvas.width, canvas.height);
+	context2.fillStyle = "#009933";
+	context2.fillRect(0,0,1300,600);
+	
+	//context2.fillStyle = "#fff";
+	context2.fillStyle = "#9FF781";
+	
+	context2.fillRect(660,0,20,600);
+	
+
+	
 	context2.drawImage(imgP1,GWData.Players[0].XPos, GWData.Players[0].YPos);
 	context2.drawImage(imgP2,GWData.Players[1].XPos, GWData.Players[1].YPos);
 	context2.drawImage(imgBall,GWData.Ball.XPos,GWData.Ball.YPos);
@@ -146,7 +156,7 @@ function initGame(){
 $( document ).ready(function() {
 
 
-    ws =  new WebSocket("ws://peeepong.host:8080/rest/cmd");
+    ws =  new WebSocket("ws://10.0.0.16:8080/rest/cmd");
        
        
        
@@ -170,26 +180,32 @@ $( document ).ready(function() {
 	<img src="img/logo.png" />
 </p>
 
-
-
-<canvas id="myCanvas" align="center" width="1300" height="600" style="border:1px solid #000000;position: absolute; z-index: 1;top:100px;left:60px;">
+<style>
+Canvas{
+    display: block;
+    margin: 0 auto;
+}
+</style>
+<div>
+<canvas id="myCanvas" align="center" width="1300" height="600" style="border:1px solid #000000;position: absolute; z-index: 1;top:100px;left:60px;margin: 0 auto;">
 </canvas>
+</div>
 
 <table style='width:1300px;position:absolute;top:710px;left:10px;'>
 	<tr>
-		 <td align="center">
+		 <td align="center" style="font-size:24pt;">
 			Player 1
 		 </td>
-		 <td align="center">
+		 <td align="center"  style="font-size:24pt;">
 			Player 2
 		 </td>
 	</tr>
 	
 	<tr>
-		 <td align="center" id="p1score">
+		 <td align="center" id="p1score"  style="font-size:38pt;">
 			0
 		 </td>
-		 <td align="center" id="p2score">
+		 <td align="center" id="p2score" style="font-size:38pt;">
 			0
 		 </td>
 	</tr>
