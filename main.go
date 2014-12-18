@@ -65,6 +65,9 @@ type PeePlayer struct {
 	RKey     string
 	Height   int
 	Width    int
+	PMsg      int
+	PMsgId		 int 
+	
 }
 
 type PeeItem struct {
@@ -95,6 +98,8 @@ type PeeeGame struct {
 	WorldHeight int
 	Ball        PeeItem
 	PowerUp     PeeItem
+	TextMsg		string;
+	
 }
 
 type PCmd struct {
@@ -132,12 +137,21 @@ func updateWorlds() {
 
 				// a point was scored
 				if pgames[i].Ball.XPos < 0 || pgames[i].Ball.XPos > 1250 {
+					
+					pgames[i].TextMsg="Press BUTTON A to START";
+					
 					if pgames[i].Ball.XPos < 5 {
 
 						pgames[i].Players[1].Score++
+						pgames[i].Players[1].PMsg=100;
+						pgames[i].Players[1].PMsgId = rand.Intn(1000000) + 1;
+						
 					} else if pgames[i].Ball.XPos > 1250 {
 
 						pgames[i].Players[0].Score++
+						
+						pgames[i].Players[0].PMsg=100;
+						pgames[i].Players[0].PMsgId = rand.Intn(1000000) + 1;
 					}
 
 					pgames[i].Ball.XPos = pgames[i].WorldWidth/2 - (pgames[i].Ball.Width / 2)
@@ -165,6 +179,10 @@ func updateWorlds() {
 					}
 
 					pgames[i].Ball.XPos += 130
+					
+					
+					pgames[i].Players[0].PMsg=101;
+					pgames[i].Players[0].PMsgId = rand.Intn(1000000) + 1;
 
 				}
 				//hit right paddle
@@ -183,6 +201,8 @@ func updateWorlds() {
 					}
 
 					pgames[i].Ball.XPos -= 130
+					pgames[i].Players[1].PMsg=101;
+					pgames[i].Players[1].PMsgId = rand.Intn(1000000) + 1;
 
 				}
 
@@ -267,7 +287,7 @@ func processCmd(cmd *PCmd) *PeeeGame {
 				game.Players[pindex].YPos = 0
 			}
 
-			return nil
+			return game
 		}
 
 	case PC_DOWN:
@@ -279,7 +299,7 @@ func processCmd(cmd *PCmd) *PeeeGame {
 				game.Players[pindex].YPos = (game.WorldHeight - game.Players[pindex].Height)
 			}
 
-			return nil
+			return game
 		}
 
 	case PC_ACTION_A:
@@ -287,6 +307,8 @@ func processCmd(cmd *PCmd) *PeeeGame {
 			log.Println("CMD PC_ACTION_A")
 			if game.State == GS_ACTION_A_REQ {
 				game.State = GS_KICKOFF
+				game.TextMsg = ""
+				
 			}
 			return nil
 		}
@@ -306,7 +328,7 @@ func processCmd(cmd *PCmd) *PeeeGame {
 
 	} //end switch
 
-	return nil
+	return game
 
 } //end process
 
@@ -454,11 +476,12 @@ func setupGame(agame *PeeeGame) {
 	agame.Players[0].RKey = ""
 	agame.Players[0].Height = 160
 	agame.Players[0].Width = 160
+	agame.Players[0].PMsg = -1;
 
 	agame.Players[1].XPos = PDEF_P2_XPOS
 	agame.Players[1].YPos = PDEF_P2_YPOS
 	agame.Players[1].RKey = ""
-
+	agame.Players[1].PMsg = -1;
 	agame.Players[1].Height = 160
 	agame.Players[1].Width = 160
 

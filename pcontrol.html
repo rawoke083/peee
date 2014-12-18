@@ -4,9 +4,15 @@
 		<meta charset="UTF-8" />
 		<title>Sample of websocket with golang</title>
 		
-		<script src="jquery.min.js"></script>
+		<script src="js/jquery.x.min.js"></script>
+	<script src="js/appconfig.js"></script>
+	<script src="js/peeerest.js"></script>
+	<script src="js/peeews.js"></script>
+	<script src="js/pcontrol.js"></script>
+	
+	
 		<script>
-
+/*
 var GGameId=0;
 var GPlayerIndex=0;
 var GRkey = Math.floor((Math.random() * 10000000) + 1) +  Math.floor((Math.random() * 10000000) + 1)
@@ -83,7 +89,7 @@ function join_game(){
  
     			$.ajax({
   type: "POST",
-  url: "http://10.0.0.16/rest/gamejoin?gameid="+GGameId+"&rkey="+GRkey,
+  url: "http://152.111.241.186/rest/gamejoin?gameid="+GGameId+"&rkey="+GRkey,
 	async:false,
    dataType: 'json',
   success:function(data){
@@ -118,19 +124,27 @@ function join_game(){
 
 
 
+*/
 
-
- 
+ var RC_LOCK_TILT = 0;
 $(function() {
-    console.log( "ready!" );
-    remote_setup();
+   console.log( "ready!" );
+
+   PeeeREST.init(0);
+   PControl.init();
+
   
-    
-    ws =  new WebSocket("ws://10.0.0.16:8080/rest/cmd");
-  /*     
+   
+   
+	if(PControl.GameData.Ready){
+		PeeeWS.init(PControl);
+		
+	}
+	
+   /*
   
-if (window.DeviceMotionEvent) {
-	window.addEventListener('devicemotion',function(eventData){
+	if (window.DeviceMotionEvent) {
+		window.addEventListener('devicemotion',function(eventData){
 		
 		var acceleration = eventData.acceleration;
    $('#dostatus').text(window.orientation+"------   "+acceleration.z);
@@ -157,12 +171,16 @@ if (window.DeviceMotionEvent) {
 }//motion-event-end
 */
 
-  
+
+	  
+	  
+	  
   if(window.DeviceOrientationEvent){
-		
 	
-	if(GGameId==0){
-			return;
+	
+	if(PControl.GameData.GameId==0){
+		alert("DAM");
+		return;
 	}
 		
 		
@@ -194,7 +212,17 @@ if (window.DeviceMotionEvent) {
 		 horz = 3;
 	 }
 	 
-	  rc(vert,horz,1); 
+
+	 var cmdObj = {
+			GameId:parseInt(PControl.GameData.GameId),
+			Cmd:vert,
+			Cmd2:horz,
+			Rkey:PControl.GameData.RKey,
+			timestamp: Date.now()
+		};
+	
+	 
+	  PeeeWS.send_cmd(cmdObj); 
 	 RC_LOCK_TILT = 0;
  }//end-lock
    });
@@ -203,7 +231,6 @@ if (window.DeviceMotionEvent) {
    
    
   }//end dev-event
-  
 
 });
 		</script>
@@ -243,12 +270,12 @@ if (window.DeviceMotionEvent) {
 	<table align="center" width="100%" style="padding:50px;">
 		<tr>
 			<td align="center">
-			<img src="img/button1.png" width="300px;" align="center" onclick="rc(10,0,1);"/>
+			<img src="img/button1.png" width="300px;" align="center" onclick="return PeeeWS.button_a();"/>
 			</td>
 			
 			
 			<td align="center">
-				<img src="img/button1.png" width="300px;" align="center" onclick="rc(12,0,1);"/>
+				<img src="img/button2.png" width="300px;" align="center" onclick="return PeeeWS.button_b();"/>
 			</td>
 			
 		</tr>

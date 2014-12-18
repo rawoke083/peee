@@ -1,175 +1,38 @@
 <html>
 <head>
-<script src="jquery.min.js"></script>
-<script>
 
-var imgP1; 
-var imgP2;
-var imgBall;
-
-
-
-var GLAST_CMD_TIME=0;
-var GGameId = 0;
-var GWData = 0;
-var canvas = 0; 
-var context = 0; 
-function ws_cmd(cmd,cmd2){
+	<script src="js/jquery.x.min.js"></script>
+	<script src="js/appconfig.js"></script>
+	<script src="js/peeerest.js"></script>
+	<script src="js/peeews.js"></script>
+	<script src="js/canvas.js"></script>
 	
-	
-	if( ws.readyState ==1  && (GLAST_CMD_TIME == 0  || (Date.now()- GLAST_CMD_TIME) > 1))
-	{
-
-		var cmdObj = {
-			GameId:parseInt(GGameId),
-			Cmd:cmd,
-			Cmd2:cmd2,
-			Rkey:"",
-			timestamp: Date.now()
-		};
-  
-		ws.send(JSON.stringify(cmdObj));
-		GLAST_CMD_TIME =   Date.now();
+	<script>
 		
-	}//end timecheck 
-	
-}//end ws_cmd
-
-
-
-
-
-
-	
-function getWorldData(){
-		
-
-	if (GGameId > 0) {
-		ws_cmd(20,0);
-		
-	}
-}
-
-
-
-
-
-
-function updateWorld(data){
-	
-	
-}
-
-function drawWorld(){
-	if(GWData == 0 ){
-		return;
-	}
-	
-	
-	var context = canvas.getContext('2d');
-	
-	// buffer canvas
-var canvas2 = document.createElement('canvas');
-canvas2.width = 1300;
-canvas2.height = 600;
-var context2 = canvas2.getContext('2d');
-	
-	context2.save();
-//	context2.clearRect(0, 0, canvas.width, canvas.height);
-	context2.fillStyle = "#009933";
-	context2.fillRect(0,0,1300,600);
-	
-	//context2.fillStyle = "#fff";
-	context2.fillStyle = "#9FF781";
-	
-	context2.fillRect(660,0,20,600);
 	
 
 	
-	context2.drawImage(imgP1,GWData.Players[0].XPos, GWData.Players[0].YPos);
-	context2.drawImage(imgP2,GWData.Players[1].XPos, GWData.Players[1].YPos);
-	context2.drawImage(imgBall,GWData.Ball.XPos,GWData.Ball.YPos);
-	
-	
-	
-	 context2.restore();
-	
-	
-	
-		context.save();
-		context.clearRect(0, 0, canvas.width, canvas.height);
-	context.drawImage(canvas2, 0, 0);
 
-    
-	 context.restore();
-	 $("#p1score").text(GWData.Players[0].Score);
-	 $("#p2score").text(GWData.Players[1].Score);
-	 
-	 
-}
-	
-function game_loop(){
-	getWorldData();
-	//updateWorld(0);
-	drawWorld()
-}
-
-function initGame(){
-	 canvas =  document.getElementById('myCanvas');
-	
-	context = canvas.getContext('2d');
-	
-	imgP1 =  new Image();
-	imgP2 = new Image();
-	imgBall = new Image();
-	
-	imgP1.src = 'img/p1.png';
-	imgP2.src = 'img/p2.png';
-	imgBall.src= 'img/ball.png';
-	
-	imgP1.onload = function() {
-		context.drawImage(imgP1,0, 0);
-	};
-
-	imgP2.onload = function() {
-		context.drawImage(imgP2,0, 0);
-	};
-	
-	imgBall.onload = function() {
-		context.drawImage(imgBall,0, 0);
-	};
-
-	
-	
-	
-	
-	
-	var params = [];
-	window.location.search.replace(/[?&]+([^=&]+)=([^&]*)/gi,function(str,key,value)
-	{params[key] = value;});
-	GGameId = params['gameid'];
-	
-	
-}
 
 
 $( document ).ready(function() {
 
 
-    ws =  new WebSocket("ws://10.0.0.16:8080/rest/cmd");
-       
-       
-       
-        ws.onmessage = function(e) {
-         GWData = JSON.parse(e.data);
-        }
- 
-  
-		initGame();
+			
+			PCanvas.init();
+			PeeeWS.init(PCanvas);
+		
+
 
 		window.setInterval(function() {
-			game_loop();
-			}, 10);
+			PCanvas.GameLoop();
+	
+			}, 15);
+						
+			
+		
+			
+			
 });
 
 

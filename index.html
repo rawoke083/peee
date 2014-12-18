@@ -3,66 +3,38 @@
 	<head>
 		<meta charset="UTF-8" />
 		<title>Sample of websocket with golang</title>
-		<script src="jquery.min.js"></script>
-		<script>
-			
-			function new_game()
-			{
-			$.ajax({
-  type: "POST",
-  url: "http://10.0.0.16/rest/game",
-  data: "koos=1",
-  success:function(data){
-	  list_games()
-  }//end succues
- 
-});//end ajax;
-			
-			}
-			
-			
-			
-function list_games(){
-	
-		$("#glist").html("");
 		
-  $.ajax({ 
-	   crossDomain: true,
-	    
-	  url:"http://10.0.0.16/rest/game",
-	  dataType: 'json',
-	  success:function(data){
-   
-    
-   $.each(data, function(index) {
-         
-           
-           var items = [];
-           if (data[index].Id > 0){
-				 
-				   items.push('<li> <h4><a href="/canvas.html?gameid=' + data[index].Id+ '"> As TV (' + data[index].Id+ ')| </a> | <a href="/pcontrol.html?gameid=' + data[index].Id+ '"> As RemoteControl -  Players('+data[index].PCount+')</a></h4></li>');
+	
 
-		   }
-           $('#glist').append( items.join('') );
-           
-        });
-  
- //alert(result);
-  //  $("#GameList").html("<a href='/pcontrol.html?id="+result.Id+"'>Game - "+result.Id+"</a>");
-    
-    
-  }});
-  
-  
-}
+	<script src="js/jquery.x.min.js"></script>
+	<script src="js/appconfig.js"></script>
+	<script src="js/peeerest.js"></script>
 
-
-
-
-
-		</script>
+	
+	<script>
+		
+		$(function() {
+			PeeeREST.init($('#glist'));
+			PeeeREST.GetGameList();
+		});
+		
+		var mainjs = {
+		
+			RefreshGameList:function(){
+				PeeeREST.GetGameList();
+			},
+			
+			NewGame:function(){
+				PeeeREST.NewGame();
+			},
+			
+		};
+		
+		
+	</script>
+		
 	</head>
-	<body onload='list_games();'  style="font-family:sans;font-size:30px;">
+	<body   style="font-family:sans;font-size:30px;">
 
       
 
@@ -76,16 +48,16 @@ function list_games(){
 	<div id="GameList" style="text-align:center;">
 		<h3>Games</h3>
 		<ul id="glist">
-			<li></li>
+			<li>x</li>
 		</ul>
 			
 	</div>
 	<p align="center">
 		<table align="center">
 			<tr>
-				<td><img src='img/button_refresh.png' onclick="list_games();"></td>
+				<td><img src='img/button_refresh.png' onclick="return mainjs.RefreshGameList();"></td>
 				
-				<td><img src='img/button_new.png' onclick="new_game();"></td>
+				<td><img src='img/button_new.png' onclick="return mainjs.NewGame();"></td>
 				
 			</tr>
 		</table>
